@@ -13,9 +13,10 @@ router.get('/list', async function(req, res, next) {
 
     const files = await fs.readdir(imageDir);
     const jpgFiles = files.filter(file => file.endsWith('.jpg'));
+    const jpgFilesWithPrefix = jpgFiles.map(file => `/images/${file}`);
 
     res.type('text/plain');
-    res.send(jpgFiles.join('\n'));
+    res.send(jpgFilesWithPrefix.join('\n'));
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: 'Not found' });

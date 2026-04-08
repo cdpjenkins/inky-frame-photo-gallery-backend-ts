@@ -24,9 +24,9 @@ describe('GET /list', () => {
     expect(response.status).toBe(200);
     expect(response.type).toBe('text/plain');
     expect(response.text).toBe(dedent`
-      test1.jpg
-      test2.jpg
-      test3.jpg
+      /images/test1.jpg
+      /images/test2.jpg
+      /images/test3.jpg
     `);
   });
 
@@ -36,9 +36,9 @@ describe('GET /list', () => {
     expect(response.status).toBe(200);
     expect(response.type).toBe('text/plain');
     expect(response.text).toBe(dedent`
-      test1.jpg
-      test2.jpg
-      test3.jpg
+      /images/test1.jpg
+      /images/test2.jpg
+      /images/test3.jpg
     `);
   });
 
