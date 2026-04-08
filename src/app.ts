@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 
 import indexRouter from './routes/index';
-import usersRouter from './routes/users';
 
 interface AppConfig {
   imageDir: string;
@@ -26,7 +25,6 @@ export function createApp(config: AppConfig) {
   app.use(express.static(path.join(__dirname, '../public')));
 
   app.use('/', indexRouter);
-  app.use('/users', usersRouter);
 
   app.use(function(req: Request, res: Response, next: NextFunction) {
     next(createError(404));
