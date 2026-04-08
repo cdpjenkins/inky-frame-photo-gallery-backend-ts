@@ -41,6 +41,20 @@ describe('GET /list', () => {
       test3.jpg
     `);
   });
+
+  it('should return 404 without leaking internal info when directory does not exist', async () => {
+    const nonExistentDir = path.join(__dirname, '../../../non-existent-directory');
+    const appWithBadDir = createApp({ imageDir: nonExistentDir });
+
+    const response = await request(appWithBadDir).get('/list');
+
+    expect(response.status).toBe(404);
+    expect(response.type).toBe('application/json');
+    expect(response.body).toEqual({ error: 'Not found' });
+    expect(JSON.stringify(response.body)).not.toContain('ENOENT');
+    expect(JSON.stringify(response.body)).not.toContain('scandir');
+    expect(JSON.stringify(response.body)).not.toContain(nonExistentDir);
+  });
 });
 
 describe('GET /images/:filename', () => {
@@ -68,5 +82,19 @@ describe('GET /images/:filename', () => {
     const response = await request(testApp).get('/images/../should-not-be-accessible.jpg');
 
     expect(response.status).toBe(404);
+  });
+
+  it('should return 404 without leaking internal info when directory does not exist', async () => {
+    const nonExistentDir = path.join(__dirname, '../../../non-existent-directory');
+    const appWithBadDir = createApp({ imageDir: nonExistentDir });
+
+    const response = await request(appWithBadDir).get('/images/test1.jpg');
+
+    expect(response.status).toBe(404);
+    expect(response.type).toBe('application/json');
+    expect(response.body).toEqual({ error: 'Not found' });
+    expect(JSON.stringify(response.body)).not.toContain('ENOENT');
+    expect(JSON.stringify(response.body)).not.toContain('sendFile');
+    expect(JSON.stringify(response.body)).not.toContain(nonExistentDir);
   });
 });

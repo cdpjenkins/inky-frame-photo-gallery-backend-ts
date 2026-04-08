@@ -16,7 +16,11 @@ router.get('/list', async function(req, res, next) {
 
     res.type('text/plain');
     res.send(jpgFiles.join('\n'));
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
     next(error);
   }
 });
@@ -31,8 +35,12 @@ router.get('/images/:filename', function(req, res, next) {
   }
 
   const filePath = path.resolve(imageDir, filename);
-  res.sendFile(filePath, (error) => {
+  res.sendFile(filePath, (error: any) => {
     if (error) {
+      if (error.code === 'ENOENT' || error.status === 404) {
+        res.status(404).json({ error: 'Not found' });
+        return;
+      }
       next(error);
     }
   });
