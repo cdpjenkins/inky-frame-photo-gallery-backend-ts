@@ -1,4 +1,5 @@
 import express from 'express';
+import dedent from 'dedent';
 const router = express.Router();
 
 router.get('/', function(req, res, next) {
@@ -7,10 +8,11 @@ router.get('/', function(req, res, next) {
 
 router.get('/list', function(req, res, next) {
   res.type('text/plain');
-  res.send(
-`file1.jpg
-file2.jpg
-file3.jpg`);
+  res.send(dedent`
+    file1.jpg
+    file2.jpg
+    file3.jpg
+  `);
 });
 
 export default router;

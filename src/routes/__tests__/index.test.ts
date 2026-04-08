@@ -1,4 +1,5 @@
 import request from 'supertest';
+import dedent from 'dedent';
 import app from '../../app';
 
 describe('GET /', () => {
@@ -17,9 +18,10 @@ describe('GET /list', () => {
 
     expect(response.status).toBe(200);
     expect(response.type).toBe('text/plain');
-    expect(response.text).toBe(
-`file1.jpg
-file2.jpg
-file3.jpg`);
+    expect(response.text).toBe(dedent`
+      file1.jpg
+      file2.jpg
+      file3.jpg
+    `);
   });
 });
