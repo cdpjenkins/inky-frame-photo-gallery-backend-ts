@@ -57,6 +57,43 @@ describe('GET /list', () => {
   });
 });
 
+describe('GET /admin', () => {
+  it('should return 200 with HTML content', async () => {
+    const response = await request(testApp).get('/admin');
+
+    expect(response.status).toBe(200);
+    expect(response.type).toBe('text/html');
+  });
+
+  it('should render an img tag for each image in the directory', async () => {
+    const response = await request(testApp).get('/admin');
+
+    expect(response.text).toContain('<img src="/images/test1.jpg"');
+    expect(response.text).toContain('<img src="/images/test2.jpg"');
+    expect(response.text).toContain('<img src="/images/test3.jpg"');
+  });
+
+  it('should not render img tags for non-jpg files', async () => {
+    const response = await request(testApp).get('/admin');
+
+    expect(response.text).not.toContain('readme.txt');
+  });
+
+  it('should return 404 without leaking internal info when directory does not exist', async () => {
+    const nonExistentDir = path.join(__dirname, '../../../non-existent-directory');
+    const appWithBadDir = createApp({ imageDir: nonExistentDir });
+
+    const response = await request(appWithBadDir).get('/admin');
+
+    expect(response.status).toBe(404);
+    expect(response.type).toBe('application/json');
+    expect(response.body).toEqual({ error: 'Not found' });
+    expect(JSON.stringify(response.body)).not.toContain('ENOENT');
+    expect(JSON.stringify(response.body)).not.toContain('scandir');
+    expect(JSON.stringify(response.body)).not.toContain(nonExistentDir);
+  });
+});
+
 describe('GET /images/:filename', () => {
   it('should return the image file with correct content type', async () => {
     const response = await request(testApp).get('/images/test1.jpg');

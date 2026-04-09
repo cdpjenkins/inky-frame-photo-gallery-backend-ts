@@ -26,6 +26,21 @@ router.get('/list', async function(req, res, next) {
   }
 });
 
+router.get('/admin', async function(req, res, next) {
+  try {
+    const imageDir = req.app.get('imageDir');
+    const files = await fs.readdir(imageDir);
+    const jpgFiles = files.filter(file => file.endsWith('.jpg'));
+    res.render('admin', { title: 'Admin', images: jpgFiles });
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+    next(error);
+  }
+});
+
 router.get('/images/:filename', function(req, res, next) {
   const imageDir = req.app.get('imageDir');
   const filename = path.basename(req.params.filename);
