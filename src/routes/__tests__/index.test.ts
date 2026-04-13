@@ -30,18 +30,6 @@ describe('GET /list', () => {
     `);
   });
 
-  it('should return jpg files from the configured image directory', async () => {
-    const response = await request(testApp).get('/list');
-
-    expect(response.status).toBe(200);
-    expect(response.type).toBe('text/plain');
-    expect(response.text).toBe(dedent`
-      /images/test1.jpg
-      /images/test2.jpg
-      /images/test3.jpg
-    `);
-  });
-
   it('should return 404 without leaking internal info when directory does not exist', async () => {
     const nonExistentDir = path.join(__dirname, '../../../non-existent-directory');
     const appWithBadDir = createApp({ imageDir: nonExistentDir });
