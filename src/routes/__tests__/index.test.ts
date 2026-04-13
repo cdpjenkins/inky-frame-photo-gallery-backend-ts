@@ -1,11 +1,27 @@
 import request from 'supertest';
 import dedent from 'dedent';
 import path from 'path';
+import fs from 'fs';
 import app from '../../app';
 import { createApp } from '../../app';
 
 const testImageDir = path.join(__dirname, '../../../test-fixtures/images');
-const testApp = createApp({ imageDir: testImageDir });
+const testMetadataPath = path.join(__dirname, '../../../test-fixtures/test-metadata.json');
+
+let testApp: any;
+
+beforeEach(() => {
+  if (fs.existsSync(testMetadataPath)) {
+    fs.unlinkSync(testMetadataPath);
+  }
+  testApp = createApp({ imageDir: testImageDir, metadataPath: testMetadataPath });
+});
+
+afterEach(() => {
+  if (fs.existsSync(testMetadataPath)) {
+    fs.unlinkSync(testMetadataPath);
+  }
+});
 
 describe('GET /', () => {
   it('should render the index page with title Express', async () => {
@@ -18,16 +34,26 @@ describe('GET /', () => {
 });
 
 describe('GET /list', () => {
-  it('should return a plaintext list of image filenames', async () => {
+  it('should return only selected photos', async () => {
+    await request(testApp).patch('/api/photos/test1.jpg').send({ selected: true });
+    await request(testApp).patch('/api/photos/test3.jpg').send({ selected: true });
+
     const response = await request(testApp).get('/list');
 
     expect(response.status).toBe(200);
     expect(response.type).toBe('text/plain');
     expect(response.text).toBe(dedent`
       /images/test1.jpg
-      /images/test2.jpg
       /images/test3.jpg
     `);
+  });
+
+  it('should return empty list when no photos are selected', async () => {
+    const response = await request(testApp).get('/list');
+
+    expect(response.status).toBe(200);
+    expect(response.type).toBe('text/plain');
+    expect(response.text).toBe('');
   });
 
   it('should return 404 without leaking internal info when directory does not exist', async () => {
@@ -65,6 +91,15 @@ describe('GET /admin', () => {
     const response = await request(testApp).get('/admin');
 
     expect(response.text).not.toContain('readme.txt');
+  });
+
+  it('should include selection state in data-selected attribute', async () => {
+    await request(testApp).patch('/api/photos/test1.jpg').send({ selected: true });
+
+    const response = await request(testApp).get('/admin');
+
+    expect(response.text).toContain('data-selected="true"');
+    expect(response.text).toContain('data-selected="false"');
   });
 
   it('should return 404 without leaking internal info when directory does not exist', async () => {
@@ -121,5 +156,34 @@ describe('GET /images/:filename', () => {
     expect(JSON.stringify(response.body)).not.toContain('ENOENT');
     expect(JSON.stringify(response.body)).not.toContain('sendFile');
     expect(JSON.stringify(response.body)).not.toContain(nonExistentDir);
+  });
+});
+
+describe('PATCH /api/photos/:filename', () => {
+  it('should update photo selection state to true', async () => {
+    const response = await request(testApp)
+      .patch('/api/photos/test1.jpg')
+      .send({ selected: true });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ selected: true });
+  });
+
+  it('should update photo selection state to false', async () => {
+    const response = await request(testApp)
+      .patch('/api/photos/test1.jpg')
+      .send({ selected: false });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ selected: false });
+  });
+
+  it('should return 404 for non-existent photo', async () => {
+    const response = await request(testApp)
+      .patch('/api/photos/nonexistent.jpg')
+      .send({ selected: true });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: 'Not found' });
   });
 });

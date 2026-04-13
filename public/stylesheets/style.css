@@ -10,17 +10,48 @@ a {
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
+  gap: 16px;
   margin-top: 16px;
 }
 
-.gallery a {
+.gallery-item {
+  position: relative;
+  border: 2px solid transparent;
+  padding: 4px;
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+.gallery-item[data-selected="true"] {
+  border-color: #00B7FF;
+  background-color: rgba(0, 183, 255, 0.1);
+}
+
+.gallery-item[data-selected="false"] {
+  opacity: 0.6;
+}
+
+.gallery-item a {
   display: block;
 }
 
-.gallery img {
+.gallery-item img {
   width: 100%;
   height: 150px;
   object-fit: cover;
   display: block;
+  border-radius: 2px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
 }

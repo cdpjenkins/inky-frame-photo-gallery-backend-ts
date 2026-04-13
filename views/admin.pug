@@ -4,5 +4,42 @@ block content
   h1 Admin
   .gallery
     each image in images
-      a(href=`/images/${image}`)
-        img(src=`/images/${image}` alt=image)
+      .gallery-item(data-selected=image.selected ? 'true' : 'false')
+        a(href=`/images/${image.filename}`)
+          img(src=`/images/${image.filename}` alt=image.filename)
+        label.checkbox-label
+          input(type='checkbox' data-filename=image.filename checked=image.selected)
+          span Select
+
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', async (e) => {
+          const filename = e.target.getAttribute('data-filename');
+          const selected = e.target.checked;
+          const galleryItem = e.target.closest('.gallery-item');
+
+          try {
+            const response = await fetch(`/api/photos/${filename}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ selected }),
+            });
+
+            if (response.ok) {
+              galleryItem.setAttribute('data-selected', selected ? 'true' : 'false');
+            } else {
+              e.target.checked = !selected;
+              alert('Failed to update selection');
+            }
+          } catch (error) {
+            e.target.checked = !selected;
+            alert('Failed to update selection');
+          }
+        });
+      });
+    });

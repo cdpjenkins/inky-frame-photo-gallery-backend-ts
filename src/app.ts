@@ -5,15 +5,25 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 
 import indexRouter from './routes/index';
+import { PhotoMetadataRepository } from './repositories/PhotoMetadataRepository';
+import { TogglePhotoSelectionCommand } from './commands/TogglePhotoSelectionCommand';
 
 interface AppConfig {
   imageDir: string;
+  metadataPath?: string;
 }
 
 export function createApp(config: AppConfig) {
   const app = express();
 
   app.set('imageDir', config.imageDir);
+
+  const metadataPath = config.metadataPath || path.join(config.imageDir, 'photo-metadata.json');
+  const photoMetadataRepository = new PhotoMetadataRepository(metadataPath);
+  const togglePhotoSelectionCommand = new TogglePhotoSelectionCommand(photoMetadataRepository, config.imageDir);
+
+  app.set('photoMetadataRepository', photoMetadataRepository);
+  app.set('togglePhotoSelectionCommand', togglePhotoSelectionCommand);
 
   app.set('views', path.join(__dirname, '../views'));
   app.set('view engine', 'pug');
